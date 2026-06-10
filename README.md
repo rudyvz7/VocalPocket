@@ -8,8 +8,8 @@ A Python tool that automatically ducks your beat whenever your vocals are active
 
 VocalPocket solves the tedious problem of manually drawing volume automation curves to carve out space for vocals in a dense instrumental track. It uses RMS energy analysis and lookahead buffering to detect vocal transients, and applies a sigmoid-interpolated gain envelope to the beat, ducking the volume only exactly when needed.
 
-![VocalPocket GUI](docs/screenshot.png)
-*(Screenshot coming soon — run `python gui.py` to see the interface)*
+<img width="2856" height="1688" alt="image" src="https://github.com/user-attachments/assets/ac23f03d-a215-4067-af83-212d8da238aa" />
+
 
 ## Installation
 
