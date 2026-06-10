@@ -1,0 +1,11 @@
+{
+  "name": "Melodic",
+  "description": "Subtle ducking for floaty, whispery vocals",
+  "settings": {
+    "ducking_depth_db": -3.0,
+    "attack_ms": 25.0,
+    "release_ms": 150.0,
+    "rms_threshold": 0.1,
+    "lookahead_ms": 15.0
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "Podcast",
+  "description": "Clean ducking for spoken word and voice-over",
+  "settings": {
+    "ducking_depth_db": -8.0,
+    "attack_ms": 30.0,
+    "release_ms": 200.0,
+    "rms_threshold": 0.08,
+    "lookahead_ms": 10.0
+  }
+}
