@@ -7,8 +7,9 @@ def detect_vocal_activity(
     frame_length: int = 2048,
     hop_length: int = 512,
     rms_threshold: float = 0.02,
-    lookahead_ms: float = 15.0
-) -> tuple[np.ndarray, int, int]:
+    lookahead_ms: float = 15.0,
+    verbose: bool = False
+):
     """
     Analyzes a vocal audio file and returns a frame-by-frame
     activity array. 1.0 = vocal present, 0.0 = silence.
@@ -19,9 +20,20 @@ def detect_vocal_activity(
         hop_length : the hop length used (for downstream math)
     """
 
-    print(f"Loading vocal file: {vocal_path}")
-    y, sr = librosa.load(vocal_path, sr=sample_rate, mono=True)
-    print(f"Loaded {len(y)} samples at {sr}Hz ({len(y)/sr:.1f} seconds)")
+    if verbose:
+        print(f"Loading vocal file: {vocal_path}")
+        
+    try:
+        y, sr = librosa.load(vocal_path, sr=sample_rate, mono=True)
+    except FileNotFoundError:
+        print(f"Error: Vocal file not found at '{vocal_path}'")
+        return None
+    except Exception as e:
+        print(f"Error loading vocal file: {e}")
+        return None
+        
+    if verbose:
+        print(f"Loaded {len(y)} samples at {sr}Hz ({len(y)/sr:.1f} seconds)")
 
     # Calculate RMS energy for each frame
     rms = librosa.feature.rms(
@@ -30,8 +42,10 @@ def detect_vocal_activity(
         hop_length=hop_length
     )[0]
 
-    # Normalize so the loudest moment = 1.0
-    rms_normalized = rms / (np.max(rms) + 1e-9)
+    # Normalize using 99th percentile for transient resistance
+    # (prevents a single loud pop from squashing the rest of the track)
+    rms_normalized = rms / (np.percentile(rms, 99) + 1e-9)
+    rms_normalized = np.clip(rms_normalized, 0.0, 1.0)
 
     # Gate: is the vocal loud enough to count as "active"?
     activity = (rms_normalized > rms_threshold).astype(float)
@@ -42,7 +56,8 @@ def detect_vocal_activity(
     activity = np.roll(activity, -lookahead_frames)
     activity[-lookahead_frames:] = 0.0  # clean up the wrapped tail
 
-    print(f"Vocal activity detected in {np.sum(activity)}/{len(activity)} frames")
-    print(f"Approx. {np.sum(activity)/len(activity)*100:.1f}% of track has vocal activity")
+    if verbose:
+        print(f"Vocal activity detected in {np.sum(activity)}/{len(activity)} frames")
+        print(f"Approx. {np.sum(activity)/len(activity)*100:.1f}% of track has vocal activity")
 
-    return activity, sr, hop_length
+    return activity, sr, hop_length, y
